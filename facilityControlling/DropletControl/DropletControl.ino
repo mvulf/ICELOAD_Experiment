@@ -5,9 +5,10 @@
 #define pinGreen 10
 #define Ledpin 13
 #define Pinbutton 5 //button
-int r=0 ;//счетчик
-int rmax=500 ;//количество тактов МЕНЯТЬ ЗДЕСЬ!!!!!!!!!!!!!!!!!!!!!
+#define pinCam 12 //photron-trigger
 
+int rmax=5 ;//количество тактов МЕНЯТЬ ЗДЕСЬ!!!!!!!!!!!!!!!!!!!!!
+int r=rmax ;//счетчик
 
 void setup() {
   pinModeFast(pinOrange, OUTPUT);
@@ -16,6 +17,7 @@ void setup() {
   pinModeFast(pinGreen, OUTPUT);
   pinModeFast(Ledpin, OUTPUT);
   pinMode(Pinbutton, INPUT);
+  pinMode(pinCam, OUTPUT);
   //digitalWrite(Pinbutton, LOW);
   }
 
@@ -27,10 +29,16 @@ delay(200);
 
 //the pin is toggled multiple time before looping is because it took too long that the pin stayed low for 600ns, while clearing or setting the pin only took 125ns. For 16MHz Arduino Uno.
  if (r<rmax) {
-digitalWriteFast(pinBlue, HIGH);
+  if (r==0) { // 
+    digitalWrite(pinCam,HIGH);
+    delay(1);
+    digitalWrite(pinCam,LOW);
+    }
+  digitalWriteFast(pinBlue, HIGH);
   //delay(10);
   digitalWriteFast(pinGreen, HIGH);
-  delayMicroseconds(15000);//ON(black wire)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!us
+  //delay(30 );//ON(black wire)ONLY FOR CLEANING
+  delayMicroseconds(5000);//ON(black wire)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!us
 
   digitalWriteFast(pinBlue, LOW);
   digitalWriteFast(pinBrown, HIGH);
@@ -55,7 +63,7 @@ delayMicroseconds(5000);
 
   
   digitalWriteFast(Ledpin, HIGH);
-  delay(400);//Break между каплями!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  delay(200);//Break между каплями !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   digitalWriteFast(Ledpin, LOW);
 r=r+1 ;//учет такта, добавление к счетчику 1
    }
