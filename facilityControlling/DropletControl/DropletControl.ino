@@ -33,6 +33,7 @@ delay(200);
     digitalWrite(pinCam,HIGH);
     delay(1);
     digitalWrite(pinCam,LOW);
+    delay(10); // Garantee of droplets-free frames
     }
   digitalWriteFast(pinBlue, HIGH);
   //delay(10);
