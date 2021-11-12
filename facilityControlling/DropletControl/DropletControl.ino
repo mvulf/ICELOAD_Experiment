@@ -7,7 +7,7 @@
 #define Pinbutton 5 //button
 #define pinCam 12 //photron-trigger
 
-int rmax=5 ;//количество тактов МЕНЯТЬ ЗДЕСЬ!!!!!!!!!!!!!!!!!!!!!
+int rmax=3 ;//количество тактов МЕНЯТЬ ЗДЕСЬ!!!!!!!!!!!!!!!!!!!!!
 int r=rmax ;//счетчик
 
 void setup() {
