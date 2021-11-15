@@ -39,7 +39,7 @@ delay(200);
   //delay(10);
   digitalWriteFast(pinGreen, HIGH);
   //delay(30 );//ON(black wire)ONLY FOR CLEANING
-  delayMicroseconds(5000);//ON(black wire)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!us
+  delayMicroseconds(4000);//ON(black wire)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!us
 
   digitalWriteFast(pinBlue, LOW);
   digitalWriteFast(pinBrown, HIGH);
