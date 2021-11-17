@@ -121,8 +121,18 @@ selectedFrames = zeros(cropCount,2);
 
 % get thresholds
 detrThreshold = zeros(2,1);
-detrThreshold(1) = quantile(rmoutliers(detrendEMD(:,1)),quantileThreshold(1));
-detrThreshold(2) = quantile(rmoutliers(detrendEMD(:,2)),quantileThreshold(2));
+if quantileThreshold(1)<=1
+    detrThreshold(1) = quantile(rmoutliers(detrendEMD(:,1)),quantileThreshold(1));
+else%if quantileThreshold(1)<=2
+    %detrThreshold(1) = (quantileThreshold(1)-1)*max(detrendEMD(:,1));
+    detrThreshold(1) = quantileThreshold(1);
+end
+if quantileThreshold(2)<=1
+    detrThreshold(2) = quantile(rmoutliers(detrendEMD(:,2)),quantileThreshold(2));
+else%if quantileThreshold(2)<=2
+    detrThreshold(2) = quantileThreshold(2);
+    %detrThreshold(2) = (quantileThreshold(2)-1)*max(detrendEMD(:,2));
+end
 % disp(strcat("Up threshold: ",string(detrThreshold(1)),...
 %     "|  Down threshold: ",string(detrThreshold(2))))
 
