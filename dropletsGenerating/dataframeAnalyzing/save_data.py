@@ -55,7 +55,7 @@ def save_xlsx(df, folder_path, save_name):
             calib_num_fmt.set_num_format('0000')
 
             # SAVING COLUMNS
-            excel_columns = ['Test №', 'Crop №', 'Test type', 'Voltage, V', 'Pressure, mbar', 'Impulse time, us', 'Needle', 'Nozzle', 'Distance, mm', 'Calibrat test №', 'Record rate, fps', 'Comments', 'Experiment date', 'Tester', 'Video format', 'Pixel size, um', 'Old Flow type', 'Old Droplet size, um', 'Droplet count', 'Flow type', 'Droplet size, um','Standard deviation of droplet size, um', 'Starting velocity, m/s', 'Ending velocity, m/s', 'Falling time, s', 'Vertical path, mm','Horizontal deviation, mm','Impulse count']
+            excel_columns = ['Test №', 'Crop №', 'Test type', 'Voltage, V', 'Pressure, mbar', 'Impulse time, us', 'Needle', 'Nozzle', 'Distance, mm', 'Calibrat test №', 'Record rate, fps', 'Comments', 'Experiment date', 'Tester', 'Video format', 'Pixel size, um', 'Old Flow type', 'Old Droplet size, um', 'Droplet count', 'Flow type', 'Droplet size, um','Standard deviation of droplet size, um', 'Starting velocity, m/s', 'Ending velocity, m/s', 'Falling time, s', 'Vertical path, mm','Horizontal deviation, mm','Impulse count', 'Crop count']
 
             # Save header
             for i, column_name in enumerate(excel_columns):
@@ -87,6 +87,7 @@ def save_xlsx(df, folder_path, save_name):
             worksheet.set_column('Z:Z', 7.1)
             worksheet.set_column('AA:AA', 9.0)
             worksheet.set_column('BB:BB', 8.1)
+            worksheet.set_column('CC:CC', 8.1)
 
             writer.save()
 

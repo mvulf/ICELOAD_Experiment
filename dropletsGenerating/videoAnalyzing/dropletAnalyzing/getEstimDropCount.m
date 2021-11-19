@@ -7,6 +7,7 @@ if needleOnFrame
     substrNeedle = 1;
 else
     substrNeedle = 0;
+end
 
 parfor i=1:length(analyzedFrames) %parfor
     allDropCount(i) = analyzedFrames{i}.dropCount-substrNeedle;
