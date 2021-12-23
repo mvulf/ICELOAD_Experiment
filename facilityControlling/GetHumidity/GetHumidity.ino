@@ -1,24 +1,39 @@
+// Humidity sensor library
 #include "DHT.h"
-#define DHTPIN 2 // Тот самый номер пина, о котором упоминалось выше
-// Одна из следующих строк закоментирована. Снимите комментарий, если подключаете датчик DHT11 к arduino
-DHT dht(DHTPIN, DHT22); //Инициация датчика
-//DHT dht(DHTPIN, DHT11);
+
+#define DHTPIN 4 // humidity pin
+
+// Humidity sensor init
+DHT dht(DHTPIN, DHT22);
+
+// humidity var, in %
+float humidity;
+
+// temperature in the chamber, *C
+float chamber_tempr;
+
 void setup() {
   Serial.begin(9600);
   dht.begin();
+  // Create csv header
+  Serial.println("time,chamber_thermo,humidity");
 }
 void loop() {
-  delay(2000); // 2 секунды задержки
-  float h = dht.readHumidity(); //Измеряем влажность
-  float t = dht.readTemperature(); //Измеряем температуру
-  if (isnan(h) || isnan(t)) {  // Проверка. Если не удается считать показания, выводится «Ошибка считывания», и программа завершает работу
-    Serial.println("Ошибка считывания");
-    return;
-  }
-  Serial.print("Влажность: ");
-  Serial.print(h);
-  Serial.print(" %\t");
-  Serial.print("Температура: ");
-  Serial.print(t);
-  Serial.println(" *C "); //Вывод показателей на экран
+  delay(2000);
+  
+  Serial.print(millis());
+
+  // measure humidity and chamber temperature
+  humidity = dht.readHumidity();
+  chamber_tempr = dht.readTemperature();
+
+  //print humidity and thermo values
+  Serial.print(",");
+  Serial.print(chamber_tempr);
+  Serial.print(",");
+  Serial.print(humidity);
+ 
+  Serial.println();
+  
+
 }

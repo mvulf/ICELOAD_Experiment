@@ -4,6 +4,10 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
+// Humidity sensor library
+#include "DHT.h"
+
+#define DHTPIN 4 // humidity pin
 #define PIN_TEMPR 8 // thermo-pin
 #define THERM_COUNT 4 // count of thermo sensors
 
@@ -20,6 +24,9 @@ const int LARGE_IMPULSE_TIME = 12000; // time of large impulse
 const int TEMP_MESURE_TIME = 800; // update time
 const int LIGHT_BRIGHTENING_TIME = 3500; // light increasing time
 const unsigned long MAX_FREEZING_TIME = 25000; // freezing time
+
+// Humidity sensor init
+DHT dht(DHTPIN, DHT22);
 
 // Set up oneWire and dallasTemperature 
 OneWire oneWire(PIN_TEMPR);
@@ -41,6 +48,12 @@ float tempr[THERM_COUNT]; // temperature variables
 unsigned long checkMillis; // time variable
 boolean flagLED; // LED switching flag
 
+// humidity var, in %
+float humidity;
+
+// temperature in the chamber, *C
+float chamber_tempr;
+
 // Init dropGenerator object
 DropGenerator dropGenerator;
 
@@ -58,18 +71,22 @@ void setup() {
 
   // object dallasTemperature init
   thermSensors.begin();
+  // object humiditySensor init
+  dht.begin();
   }
 
 void loop() {
   // get temperature by command "t" 
   // generate droplets by command "g"
   // turn on/off the light by command "l"
+  // get humidity and ambient temperature by command "h"
   if (Serial.available() > 0)
   {
     incomingByte = Serial.read();
+    
+    // GET TEMPERATURES
     if (incomingByte == 116) // letter 't'
-    {
-      // GET TEMPERATURES
+    { 
       // Create csv header
       Serial.println("time,thermo_1,thermo_2,thermo_3,thermo_4");
       // Thermo measuring, while light is getting brighter
@@ -124,6 +141,28 @@ void loop() {
         Serial.println(". Light ON");
       }
     }
+
+    // GET HUMIDITY
+    if (incomingByte == 104) // letter 'h'
+    {
+      // Create csv header
+      Serial.println("time,chamber_thermo,humidity");
+      Serial.print(millis());
+
+      // measure humidity and chamber temperature
+      humidity = dht.readHumidity();
+      chamber_tempr = dht.readTemperature();
+
+      //print humidity and thermo values
+      Serial.print(",");
+      Serial.print(chamber_tempr);
+      Serial.print(",");
+      Serial.print(humidity);
+     
+      Serial.println();
+      
+    }
+      
   }
   
   // START FULL-PROGRAM, if button is pressed
@@ -150,19 +189,23 @@ void loop() {
 
     // GET TEMPERATURES: before drop generating
     // Create csv header
-    Serial.println("time,thermo_1,thermo_2,thermo_3,thermo_4");
-    // Thermo measuring, while light is getting brighter
+    Serial.println("time,thermo_1,thermo_2,thermo_3,thermo_4,chamber_thermo,humidity");
+    // Thermo and humidity measuring, while light is getting brighter
     while (millis()-checkMillis < LIGHT_BRIGHTENING_TIME)
     {
       // measure temperatures
       thermSensors.requestTemperatures();
 
+      // measure humidity and chamber temperature
+      humidity = dht.readHumidity();
+      chamber_tempr = dht.readTemperature();
+      
       //retrieve measure result
       for (uint8_t i = 0; i < 4; i++)
       {
         tempr[i] = thermSensors.getTempC(*ThermPtr[i]);
       }
-    
+
       //print thermo-values
       Serial.print(millis());
       for (uint8_t i = 0; i < 4; i++)
@@ -170,6 +213,13 @@ void loop() {
         Serial.print(",");
         Serial.print(tempr[i]);
       }
+
+      //print humidity and thermo values
+      Serial.print(",");
+      Serial.print(chamber_tempr);
+      Serial.print(",");
+      Serial.print(humidity);
+     
       Serial.println();
     }
 
@@ -196,21 +246,26 @@ void loop() {
     Serial.println(". Droplet generating end. LED ON");
     flagLED = true;
 
+
     // GET TEMPERATURES: after drop generating
     // Create csv header
-    Serial.println("time,thermo_1,thermo_2,thermo_3,thermo_4");
-    // Thermo measuring, while light is getting brighter
+    Serial.println("time,thermo_1,thermo_2,thermo_3,thermo_4,chamber_thermo,humidity");
+    // Thermo and humidity measuring, while light is getting brighter
     while (millis()-checkMillis < MAX_FREEZING_TIME)
     {
       // measure temperatures
       thermSensors.requestTemperatures();
 
+      // measure humidity and chamber temperature
+      humidity = dht.readHumidity();
+      chamber_tempr = dht.readTemperature();
+      
       //retrieve measure result
       for (uint8_t i = 0; i < 4; i++)
       {
         tempr[i] = thermSensors.getTempC(*ThermPtr[i]);
       }
-    
+
       //print thermo-values
       Serial.print(millis());
       for (uint8_t i = 0; i < 4; i++)
@@ -218,6 +273,13 @@ void loop() {
         Serial.print(",");
         Serial.print(tempr[i]);
       }
+
+      //print humidity and thermo values
+      Serial.print(",");
+      Serial.print(chamber_tempr);
+      Serial.print(",");
+      Serial.print(humidity);
+     
       Serial.println();
 
       // Switch of the LED
