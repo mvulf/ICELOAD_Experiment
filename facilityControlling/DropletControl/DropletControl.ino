@@ -24,6 +24,7 @@ const int LARGE_IMPULSE_TIME = 12000; // time of large impulse
 const int TEMP_MESURE_TIME = 800; // update time
 const int LIGHT_BRIGHTENING_TIME = 3500; // light increasing time
 const unsigned long MAX_FREEZING_TIME = 25000; // freezing time
+const unsigned long LED_TIME = 3500; // time of LED-shining
 
 // Humidity sensor init
 DHT dht(DHTPIN, DHT22);
@@ -47,6 +48,8 @@ String testName;
 float tempr[THERM_COUNT]; // temperature variables
 unsigned long checkMillis; // time variable
 boolean flagLED; // LED switching flag
+boolean flagTempr = false; // Switch t-measuring
+
 
 // humidity var, in %
 float humidity;
@@ -87,26 +90,12 @@ void loop() {
     // GET TEMPERATURES
     if (incomingByte == 116) // letter 't'
     { 
-      // Create csv header
-      Serial.println("time,thermo_1,thermo_2,thermo_3,thermo_4");
-      // Thermo measuring, while light is getting brighter
-      // measure temperatures
-        thermSensors.requestTemperatures();
-  
-        //retrieve measure result
-        for (uint8_t i = 0; i < 4; i++)
-        {
-          tempr[i] = thermSensors.getTempC(*ThermPtr[i]);
-        }
-      
-        //print thermo-values
-        Serial.print(millis());
-        for (uint8_t i = 0; i < 4; i++)
-        {
-          Serial.print(",");
-          Serial.print(tempr[i]);
-        }
-        Serial.println();
+      // FLAG: measure temperatures
+      flagTempr = !flagTempr;
+      if (flagTempr){
+          // Create csv header
+          Serial.println("time,thermo_1,thermo_2,thermo_3,thermo_4");
+        }  
     }
 
     // DROPLET GENERATOR CONTROL
@@ -161,14 +150,37 @@ void loop() {
      
       Serial.println();
       
+    }    
+  }
+
+  // TEMPERATURES MEASURING
+  if(flagTempr)
+  {
+    // measure temperatures
+    thermSensors.requestTemperatures();
+
+    //retrieve measure result
+    for (uint8_t i = 0; i < 4; i++)
+    {
+      tempr[i] = thermSensors.getTempC(*ThermPtr[i]);
     }
-      
+  
+    //print thermo-values
+    Serial.print(millis());
+    for (uint8_t i = 0; i < 4; i++)
+    {
+      Serial.print(",");
+      Serial.print(tempr[i]);
+    }
+    Serial.println();
   }
   
   // START FULL-PROGRAM, if button is pressed
   if(digitalRead(pinButton)==LOW){
     // Switch of the light. In case of switching on by command.
     digitalWrite(pinLight,LOW);
+    // Stop temperature measuring. In case of switching on by command.
+    flagTempr = false;
     
     Serial.println();
     Serial.println("Write test name!");
@@ -283,7 +295,7 @@ void loop() {
       Serial.println();
 
       // Switch of the LED
-      if (flagLED)
+      if (flagLED & (millis()-checkMillis > LED_TIME))
       {
         digitalWrite(pinLED, LOW);
         Serial.print(millis());
