@@ -50,6 +50,7 @@ unsigned long checkMillis; // time variable
 boolean flagLED; // LED switching flag
 boolean flagTempr = false; // Switch t-measuring
 
+boolean flagMeasure = false; // Provide full measurement
 
 // humidity var, in %
 float humidity;
@@ -83,9 +84,18 @@ void loop() {
   // generate droplets by command "g"
   // turn on/off the light by command "l"
   // get humidity and ambient temperature by command "h"
+  // full program by command "f"
   if (Serial.available() > 0)
   {
     incomingByte = Serial.read();
+
+    // PROVIDE FULL PROGRAM
+    if (incomingByte == 102) // letter 'f'
+    { 
+      // FLAG: generating & measure
+      flagMeasure = true;
+      Serial.readString();
+    }
     
     // GET TEMPERATURES
     if (incomingByte == 116) // letter 't'
@@ -175,8 +185,11 @@ void loop() {
     Serial.println();
   }
   
-  // START FULL-PROGRAM, if button is pressed
-  if(digitalRead(pinButton)==LOW){
+  // START FULL-PROGRAM, if button is pressed or measure flag
+  if((digitalRead(pinButton)==LOW)||flagMeasure){
+    // Drop measure flag
+    flagMeasure = false;
+    
     // Switch of the light. In case of switching on by command.
     digitalWrite(pinLight,LOW);
     // Stop temperature measuring. In case of switching on by command.
@@ -295,7 +308,7 @@ void loop() {
       Serial.println();
 
       // Switch of the LED
-      if (flagLED & (millis()-checkMillis > LED_TIME))
+      if (flagLED && (millis()-checkMillis > LED_TIME))
       {
         digitalWrite(pinLED, LOW);
         Serial.print(millis());
