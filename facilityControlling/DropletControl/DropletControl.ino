@@ -23,7 +23,7 @@ const int LARGE_IMPULSE_TIME = 12000; // time of large impulse
 
 const int TEMP_MESURE_TIME = 800; // update time
 const int LIGHT_BRIGHTENING_TIME = 3500; // light increasing time
-const unsigned long MAX_FREEZING_TIME = 25000; // freezing time
+const unsigned long MAX_FREEZING_TIME = 60000; // freezing time
 const unsigned long LED_TIME = 3500; // time of LED-shining
 
 // Humidity sensor init
@@ -314,6 +314,19 @@ void loop() {
         Serial.print(millis());
         Serial.println(". LED OFF");
         flagLED = false;
+      }
+
+      // CHECK STOP COMMAND: if LED is off!
+      if ((!flagLED) && (Serial.available() > 0))
+      {
+        incomingByte = Serial.read();
+    
+        // STOP COMMAND
+        if (incomingByte == 115) // letter 's'
+        { 
+          Serial.readString();
+          break;
+        }
       }
     }
       
