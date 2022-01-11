@@ -13,7 +13,8 @@
 
 #define pinButton 5 // button
 #define pinLight 1 // light-trigger
-#define pinCam 12 // photron-trigger
+#define pinBaumerCam 11 // Baumer-trigger
+#define pinPhotronCam 12 // photron-trigger
 #define pinLED 2 // synchro LED
 
 const int IMPULSE_COUNT = 50; // count of microimpulses
@@ -70,8 +71,9 @@ void setup() {
   
   pinMode(pinLED, OUTPUT);
   digitalWrite(pinLED, LOW);
-  
-  pinMode(pinCam, OUTPUT);
+
+  pinMode(pinBaumerCam, OUTPUT);
+  pinMode(pinPhotronCam, OUTPUT);
 
   // object dallasTemperature init
   thermSensors.begin();
@@ -258,10 +260,13 @@ void loop() {
     
     // Photron recording
     Serial.print(millis());
+    Serial.println(". Baumer recording start");
+    digitalWrite(pinBaumerCam, HIGH);
     Serial.println(". Photron recording start");
-    digitalWrite(pinCam, HIGH);
+    digitalWrite(pinPhotronCam, HIGH);
     delay(1);
-    digitalWrite(pinCam,LOW);
+    digitalWrite(pinPhotronCam,LOW);
+    digitalWrite(pinBaumerCam,LOW);
     
     // LED on
     digitalWrite(pinLED, HIGH);
