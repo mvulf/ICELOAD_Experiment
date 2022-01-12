@@ -7,6 +7,8 @@
 // Humidity sensor library
 #include "DHT.h"
 
+// #define MAX_INPUT 50
+
 #define DHTPIN 4 // humidity pin
 #define PIN_TEMPR 8 // thermo-pin
 #define THERM_COUNT 4 // count of thermo sensors
@@ -16,14 +18,9 @@
 #define pinCam 12 // photron-trigger
 #define pinLED 2 // synchro LED
 
-const int IMPULSE_COUNT = 50; // count of microimpulses
-const int MICRO_IMPULSE_TIME = 4000; // time of micro impulse
-const int BETWEEN_IMPULSE_TIME = 5000; // time between impulses
-const int LARGE_IMPULSE_TIME = 12000; // time of large impulse
-
 const int TEMP_MESURE_TIME = 800; // update time
 const int LIGHT_BRIGHTENING_TIME = 3500; // light increasing time
-const unsigned long MAX_FREEZING_TIME = 60000; // freezing time
+const unsigned long MAX_FREEZING_TIME = 180000; // freezing time
 const unsigned long LED_TIME = 3500; // time of LED-shining
 
 // Humidity sensor init
@@ -43,8 +40,19 @@ DeviceAddress Therm_4 = {0x28, 0xD1, 0xE5, 0xD5, 0x14, 0x20, 0x06, 0xAD}; //IV
 DeviceAddress* ThermPtr[THERM_COUNT] = {&Therm_1, 
 &Therm_2, &Therm_3, &Therm_4};
 
+// droplet generating parameters
+int impulseCount = 50; // count of microimpulses
+int microImpulseTime = 4000; // time of micro impulse
+int betweenImpulseTime = 5000; // time between impulses
+int largeImpulseTime = 12000; // time of large impulse
+
 int incomingByte = 0; // for incoming data
 String testName;
+
+// char inputBuffer[MAX_INPUT+1];
+
+char generatingValues[90];
+
 float tempr[THERM_COUNT]; // temperature variables
 unsigned long checkMillis; // time variable
 boolean flagLED; // LED switching flag
@@ -77,6 +85,18 @@ void setup() {
   thermSensors.begin();
   // object humiditySensor init
   dht.begin();
+
+//  inputBuffer[0] = '\0';
+
+  Serial.println("Default settings of droplet generating:");
+  Serial.println("impulseCount,microImpulseTime,largeImpulseTime,betweenImpulseTime");
+  Serial.print(impulseCount);
+  Serial.print(",");
+  Serial.print(microImpulseTime);
+  Serial.print(",");
+  Serial.print(largeImpulseTime);
+  Serial.print(",");
+  Serial.println(betweenImpulseTime);
   }
 
 void loop() {
@@ -84,7 +104,8 @@ void loop() {
   // generate droplets by command "g"
   // turn on/off the light by command "l"
   // get humidity and ambient temperature by command "h"
-  // full program by command "f"
+  // full program by command "f". Stop command by "f"
+  // change settings by command "s".
   if (Serial.available() > 0)
   {
     incomingByte = Serial.read();
@@ -111,13 +132,23 @@ void loop() {
     // DROPLET GENERATOR CONTROL
     if (incomingByte == 103) // letter 'g'
     {
+      Serial.println("Current settings of droplet generating:");
+      Serial.println("impulseCount,microImpulseTime,largeImpulseTime,betweenImpulseTime");
+      Serial.print(impulseCount);
+      Serial.print(",");
+      Serial.print(microImpulseTime);
+      Serial.print(",");
+      Serial.print(largeImpulseTime);
+      Serial.print(",");
+      Serial.println(betweenImpulseTime);
+        
       // Prepare large droplet
       Serial.print(millis());
       Serial.println(". Droplet generating start");
-      dropGenerator.largeDropPreparing(IMPULSE_COUNT, MICRO_IMPULSE_TIME, BETWEEN_IMPULSE_TIME);
+      dropGenerator.largeDropPreparing(impulseCount, microImpulseTime, betweenImpulseTime);
 
       // Generate large droplet (with macro impulse)
-      dropGenerator.oneDrop(LARGE_IMPULSE_TIME);
+      dropGenerator.oneDrop(largeImpulseTime);
       Serial.print(millis());
       Serial.println(". Droplet generating end");  
     }
@@ -158,9 +189,119 @@ void loop() {
       Serial.print(",");
       Serial.print(humidity);
      
+      Serial.println();   
+    }
+    
+    // CHANGE DROPLET GENERATING SETTINGS
+    if (incomingByte == 115) // letter 's'
+    {
+      // display settings
+      Serial.println("Current settings of droplet generating:");
+      Serial.println("impulseCount,microImpulseTime,largeImpulseTime,betweenImpulseTime");
+      Serial.print(impulseCount);
+      Serial.print(",");
+      Serial.print(microImpulseTime);
+      Serial.print(",");
+      Serial.print(largeImpulseTime);
+      Serial.print(",");
+      Serial.println(betweenImpulseTime);
+
       Serial.println();
-      
-    }    
+
+      Serial.readString();
+      Serial.println("Do you want to change them?");
+      Serial.println("Write (c) for changing impulseCount");
+      Serial.println("Write (m) for changing microImpulseTime");
+      Serial.println("Write (l) for changing largeImpulseTime");
+      Serial.println("Write (b) for changing betweenImpulseTime");
+      Serial.println("Write any other letter for cancelling settings changing.");
+      while (Serial.available() == 0)
+      {
+        }
+
+      //Serial.println("Write new settings, using comma as delimiter");
+      //Serial.println("impulseCount,microImpulseTime,largeImpulseTime,betweenImpulseTime");       
+      incomingByte = Serial.read();
+      Serial.readString();
+      if (incomingByte == 99) // letter 'c'
+      {
+        Serial.println("Write impulseCount:");
+        while (Serial.available() == 0)
+        {
+          }
+        impulseCount = Serial.readString().toInt();
+      }
+
+      if (incomingByte == 109) // letter 'm'
+      {
+        Serial.println("Write microImpulseTime:");
+        while (Serial.available() == 0)
+        {
+          }
+        microImpulseTime = Serial.readString().toInt();
+      }
+
+      if (incomingByte == 108) // letter 'l'
+      {
+        Serial.println("Write largeImpulseTime:");
+        while (Serial.available() == 0)
+        {
+          }
+        largeImpulseTime = Serial.readString().toInt();
+      }
+
+      if (incomingByte == 98) // letter 'b'
+      {
+        Serial.println("Write betweenImpulseTime:");
+        while (Serial.available() == 0)
+        {
+          }
+        betweenImpulseTime = Serial.readString().toInt();
+      }
+        //TODO: Write values parser! 
+        //char input = Serial.read();
+        //static int s_len; // static variables default to 0
+        //if (s_len>=MAX_INPUT) {
+          // Have received already the maximum number of characters
+          // Ignore all new input until line termination occurs
+        //} else if (input != '\n' && input != '\r') {
+        //  inputBuffer[s_len++] = input;
+        //} else {
+          // Have received a LF or CR character
+    
+          // INSERT YOUR CODE HERE TO PROCESS THE RECEIVED DATA //
+          // YOU COULD COPY TO A NEW VARIABLE WITH strncpy() OR //
+          // SET A FLAG TO SAY TO START SOME OTHER TASK         //
+         // Serial.print("RECEIVED MSG: ");
+         // Serial.println(inputBuffer);
+    
+         // memset(inputBuffer, 0, sizeof(inputBuffer));
+         // s_len = 0;             // Reset input buffer here if you
+                                 // have already copied the data.
+                                 // If you don't reset here, then
+                                 // you can't start receiving more
+                                 // serial port data. This is your
+                                 // 'software' serial buffer, contrast
+                                 // with the hardware serial buffer.
+       // }
+              
+          // values for parsing
+        //char generatingValues[] = Serial.readString();
+       // char generatingValues[] 
+       // char* pch;
+
+        Serial.println("New settings of droplet generating:");
+        Serial.println("impulseCount,microImpulseTime,largeImpulseTime,betweenImpulseTime");
+        Serial.print(impulseCount);
+        Serial.print(",");
+        Serial.print(microImpulseTime);
+        Serial.print(",");
+        Serial.print(largeImpulseTime);
+        Serial.print(",");
+        Serial.println(betweenImpulseTime);
+
+       // Serial.println("Changing settings cancelled"); 
+    }
   }
 
   // TEMPERATURES MEASURING
@@ -248,13 +389,23 @@ void loop() {
       Serial.println();
     }
 
+    Serial.println("Current settings of droplet generating:");
+    Serial.println("impulseCount,microImpulseTime,largeImpulseTime,betweenImpulseTime");
+    Serial.print(impulseCount);
+    Serial.print(",");
+    Serial.print(microImpulseTime);
+    Serial.print(",");
+    Serial.print(largeImpulseTime);
+    Serial.print(",");
+    Serial.println(betweenImpulseTime);
+
     // Prepare large droplet
     Serial.print(millis());
     Serial.println(". Droplet generating start");
-    dropGenerator.largeDropPreparing(IMPULSE_COUNT, MICRO_IMPULSE_TIME, BETWEEN_IMPULSE_TIME);
+    dropGenerator.largeDropPreparing(impulseCount, microImpulseTime, betweenImpulseTime);
         
     // Generate large droplet (with macro impulse)
-    dropGenerator.oneDrop(LARGE_IMPULSE_TIME);
+    dropGenerator.oneDrop(largeImpulseTime);
     
     // Photron recording
     Serial.print(millis());
@@ -322,7 +473,7 @@ void loop() {
         incomingByte = Serial.read();
     
         // STOP COMMAND
-        if (incomingByte == 115) // letter 's'
+        if (incomingByte == 102) // letter 'f'
         { 
           Serial.readString();
           break;
