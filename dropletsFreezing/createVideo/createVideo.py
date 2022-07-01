@@ -21,14 +21,22 @@ def create_video(pathIn, pathOut, fps=1):
     #for sorting the file names properly
     files.sort(key = lambda x: x[:-4])
     for i in range(len(files)):
-        filename=pathIn + files[i]
-        #reading each files
-        img = cv2.imread(filename)
-        height, width, layers = img.shape
-        size = (width,height)
-        
-        #inserting the frames into an image array
-        frame_array.append(img)
+        filename=pathIn + '/' + files[i]
+        # CHECK format
+        if str(filename[-3:]).lower() in ['jpg', 'tif']:
+            # reading each image
+            img = cv2.imread(filename)
+            # Check Type
+            if img is None:
+                print('Error read:', filename)
+                continue
+            height, width, layers = img.shape
+            size = (width,height)
+            
+            # inserting the frames into an image array
+            frame_array.append(img)
+        else:
+            print('Missed:',filename)
     out = cv2.VideoWriter(pathOut,0, fps, size)
     for i in range(len(frame_array)):
         # writing to a image array
